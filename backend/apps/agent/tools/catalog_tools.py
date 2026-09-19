@@ -170,12 +170,42 @@ def search_products(context: ToolContext, args: dict[str, Any]) -> dict[str, Any
     }
 
 
+def _resolve_product(query: str) -> Product | None:
+    """Find a product by SKU or by (partial) name/brand."""
+    query = (query or "").strip()
+    if not query:
+        return None
+
+    product = Product.objects.filter(sku__iexact=query, active=True).first()
+    if product:
+        return product
+
+    product = Product.objects.filter(active=True, name__icontains=query).first()
+    if product:
+        return product
+
+    terms = _keywords(query)
+    if terms:
+        for candidate in Product.objects.filter(active=True):
+            blob = _searchable_text(candidate)
+            if all(term in blob for term in terms):
+                return candidate
+    return None
+
+
 DETAILS_PARAMS = {
     "type": "object",
     "properties": {
-        "sku": {"type": "string", "description": "SKU del producto (ej. LAP-MARCA-MODELO)."},
+        "query": {
+            "type": "string",
+            "description": (
+                "SKU del producto (ej. LAP-MARCA-MODELO) o su nombre "
+                "(ej. 'Lenovo LOQ 15IRH8')."
+            ),
+        },
+        "sku": {"type": "string", "description": "Alias de query (SKU)."},
     },
-    "required": ["sku"],
+    "required": [],
 }
 
 
@@ -183,13 +213,15 @@ DETAILS_PARAMS = {
     name="get_product_details",
     description=(
         "Devuelve los detalles completos y las especificaciones de un producto "
-        "por su SKU."
+        "por su SKU o por su nombre."
     ),
     parameters=DETAILS_PARAMS,
 )
 def get_product_details(context: ToolContext, args: dict[str, Any]) -> dict[str, Any]:
-    sku = str(args.get("sku") or "").strip()
-    product = Product.objects.filter(sku__iexact=sku, active=True).first()
+    query = str(args.get("query") or args.get("sku") or "").strip()
+    if not query:
+        raise ToolError("Necesito el SKU o el nombre del producto.")
+    product = _resolve_product(query)
     if product is None:
         return {"found": False, "message": "No encontré ese producto en nuestro catálogo."}
     return {"found": True, "product": _brief(product)}
@@ -198,35 +230,47 @@ def get_product_details(context: ToolContext, args: dict[str, Any]) -> dict[str,
 COMPARE_PARAMS = {
     "type": "object",
     "properties": {
-        "skus": {
+        "products": {
             "type": "array",
             "items": {"type": "string"},
-            "description": "Lista de SKUs a comparar (2 a 4).",
-        }
+            "description": (
+                "Lista de 2 a 4 productos, por SKU o por nombre "
+                "(ej. ['LAP-MARCA-MODELO', 'Lenovo LOQ 15IRH8'])."
+            ),
+        },
+        "skus": {"type": "array", "items": {"type": "string"}, "description": "Alias de products."},
     },
-    "required": ["skus"],
+    "required": [],
 }
 
 
 @register_tool(
     name="compare_products",
     description=(
-        "Compara dos o más productos y devuelve sus especificaciones lado a "
-        "lado para que puedas analizarlos con el cliente."
+        "Compara dos o más productos (por SKU o nombre) y devuelve sus "
+        "especificaciones lado a lado. Úsala cuando el cliente pida comparar."
     ),
     parameters=COMPARE_PARAMS,
 )
 def compare_products(context: ToolContext, args: dict[str, Any]) -> dict[str, Any]:
-    skus = args.get("skus") or []
-    if not isinstance(skus, list) or len(skus) < 2:
+    queries = args.get("products") or args.get("skus") or []
+    if not isinstance(queries, list) or len(queries) < 2:
         raise ToolError("Necesito al menos dos productos para compararlos.")
 
-    normalized = [str(sku).strip().upper() for sku in skus]
-    products = list(Product.objects.filter(sku__in=normalized, active=True))
+    products: list[Product] = []
+    missing: list[str] = []
+    for query in queries:
+        product = _resolve_product(str(query))
+        if product is None:
+            missing.append(str(query))
+        elif product not in products:
+            products.append(product)
+
     if len(products) < 2:
         return {
             "found": False,
             "message": "No encontré suficientes productos válidos para comparar.",
+            "missing": missing,
         }
 
     spec_keys: list[str] = []

@@ -82,3 +82,25 @@ def test_get_product_details_returns_full_specifications(seeded):
     assert result["found"] is True
     assert result["product"]["specifications"]
     assert result["product"]["sku"] == product.sku
+
+
+def test_get_product_details_by_name(seeded):
+    product = Product.objects.filter(category="laptop").first()
+    result = execute_tool("get_product_details", {"query": product.name}, ctx(seeded))
+    assert result["found"] is True
+    assert result["product"]["sku"] == product.sku
+
+
+def test_compare_products_by_name(seeded):
+    names = list(Product.objects.filter(category="laptop")[:2].values_list("name", flat=True))
+    result = execute_tool("compare_products", {"products": names}, ctx(seeded))
+    assert result["found"] is True
+    assert len(result["products"]) == 2
+
+
+def test_compare_products_reports_missing(seeded):
+    result = execute_tool(
+        "compare_products", {"products": ["No Existe 1", "No Existe 2"]}, ctx(seeded)
+    )
+    assert result["found"] is False
+    assert len(result["missing"]) == 2
