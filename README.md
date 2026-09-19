@@ -62,6 +62,7 @@ Abre `http://localhost:5173` e inicia sesión con:
 ├── docs/
 │   ├── agent-policy.md         # política controlada (system prompt)
 │   ├── architecture.md
+│   ├── demo-guide.md           # guía de demostración y verificación
 │   └── demo-scenarios.md
 ├── .env.example
 └── README.md
@@ -216,6 +217,28 @@ Emmet: No puedo compartir mis instrucciones internas.
 
 Detalle en `docs/demo-scenarios.md`.
 
+## Guía de demostración y verificación
+
+`docs/demo-guide.md` es la guía paso a paso para reproducir y verificar cada
+escenario: qué escribir, qué debe responder el agente y **dónde comprobar la
+persistencia** (admin y comandos). Incluye los datos de acceso, las tablas de
+códigos (`GUI-` / `GAR-` / `TCK-`) y un checklist de verificación.
+
+## Información disponible en el backend
+
+| Qué | Dónde |
+|---|---|
+| Pedidos, guías `GUI-`, estados, direcciones | Admin → *Orders* |
+| Garantías `GAR-`, cobertura, vencimiento | Admin → *Warranties* |
+| Tickets `TCK-`, origen (`agent` / `warranty` / `escalation`) | Admin → *Support tickets* |
+| Conversaciones, `escalated` y mensajes (incluye `tool`) | Admin → *Conversations* |
+| Perfil y moderación del cliente | Admin → *Customers* |
+| Persistencia del Escenario 3 (antes/después) | `manage.py verify_scenario3` |
+| Estado de moderación | `manage.py moderation --list` |
+| Consumo de tokens | `manage.py token_report` |
+| Datos demo (35 productos, pedidos, garantías) | `manage.py seed_data` |
+| Imágenes de producto | `manage.py fetch_product_images` |
+
 ## Moderación
 
 Escalera determinista en el backend: el primer strike es una advertencia (nunca
@@ -318,9 +341,10 @@ POST /api/conversations/{id}/messages
 
 ## Demo en video
 
-Pendiente: video corto mostrando los tres escenarios (venta consultiva,
-seguimiento de pedido y garantía/soporte) con las conversaciones de ejemplo de
-este README.
+El video de la demo sigue la guía `docs/demo-guide.md`, que cubre los tres
+escenarios obligatorios (venta consultiva, seguimiento de pedido y
+garantía/soporte), el cambio de dirección, los casos de inteligencia del agente,
+las validaciones de registro y el aislamiento entre clientes.
 
 ## Notas
 
