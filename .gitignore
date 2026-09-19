@@ -1,0 +1,48 @@
+# Environment
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Django
+*.sqlite3
+db.sqlite3
+/backend/media/
+/backend/staticfiles/
+
+# Migraciones: no se versionan (se regeneran con `makemigrations`)
+backend/apps/*/migrations/*.py
+!backend/apps/*/migrations/__init__.py
+
+# Node
+node_modules/
+frontend/dist/
+frontend/.vite/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Un solo lockfile: se usa pnpm
+frontend/package-lock.json
+
+# Documentos del enunciado (no se publican)
+AGENT_BUILD_PROMPT.md
+PRUEBA_TECNICA_*.md
+
+# Entregable
+*.zip
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
