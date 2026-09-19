@@ -229,6 +229,49 @@ python backend/manage.py moderation --unblock 1023456789
 python backend/manage.py moderation --block 1023456789
 ```
 
+## Admin de Django
+
+Todo el modelo de datos está registrado para inspección:
+
+```bash
+python backend/manage.py createsuperuser   # si no tienes uno
+# http://localhost:8000/admin/
+```
+
+Qué puedes verificar ahí:
+
+- **Orders** → número de guía (`GUI-`), estado, dirección actualizada, con la
+  garantía en línea.
+- **Warranties** → código (`GAR-`), cobertura y vencimiento.
+- **Support tickets** → código (`TCK-`), origen (`agent` / `warranty` /
+  `escalation`), estado y prioridad.
+- **Conversations** → `escalated` y los mensajes (incluidos los `tool` con su
+  `tool_name`), para auditar las llamadas a herramientas.
+- **Customer profiles / moderation** → preferencias y estado de moderación.
+
+## Verificación de persistencia (Escenario 3)
+
+`verify_scenario3` demuestra con la base de datos que el escenario persiste, sin
+depender de lo que diga el agente. Llama **las mismas tools** que usa el agente y
+muestra las filas creadas:
+
+```bash
+python backend/manage.py verify_scenario3
+python backend/manage.py verify_scenario3 --order GUI-845A7W
+python backend/manage.py verify_scenario3 --cleanup
+```
+
+Salida (resumen):
+
+```text
+PASO 1 · check_warranty        → GAR-AWD3YZ | active | is_active=True | vence 2027-05-17
+PASO 2 · create_warranty_request → ticket TCK-KXN2DU (source=warranty, FK a GAR-AWD3YZ)
+PASO 3 · escalate_conversation  → conversations.escalated = True + ticket TCK-98V4KD (source=escalation)
+```
+
+Los datos quedan en la base para inspección en `/admin/` (usa `--cleanup` para
+borrarlos).
+
 ## Consumo de tokens
 
 `token_report` mide el consumo con el tokenizer real (prefijo cacheable y ahorro
@@ -245,10 +288,11 @@ python backend/manage.py token_report --conversation 12
 .venv/bin/pytest backend
 ```
 
-**98 tests** que cubren autenticación, autorización entre clientes, herramientas
-de catálogo, pedidos y garantías, moderación, escalamiento e integración del flujo
-`request -> auth -> agente -> tool -> base de datos -> respuesta`. El LLM se
-sustituye por un proveedor falso, así que **no se llama a OpenAI** en los tests.
+**105 tests** que cubren autenticación, autorización entre clientes, herramientas
+de catálogo, pedidos y garantías, moderación, escalamiento, admin e integración
+del flujo `request -> auth -> agente -> tool -> base de datos -> respuesta`. El
+LLM se sustituye por un proveedor falso, así que **no se llama a OpenAI** en los
+tests.
 
 ## API principal
 

@@ -187,7 +187,7 @@ def run_agent(
     else:  # escalate
         attempts = memory_service.increment_unresolved(memory)
         if attempts >= settings.AGENT_UNRESOLVED_ATTEMPTS_THRESHOLD:
-            escalated = _escalate(conversation)
+            escalated = escalate_conversation(conversation)
             if _ESCALATION_NOTE.strip() not in final_reply:
                 final_reply = final_reply.rstrip() + _ESCALATION_NOTE
 
@@ -252,7 +252,12 @@ def _classify_outcome(
     return normalize(parsed.get("outcome"))
 
 
-def _escalate(conversation) -> bool:
+def escalate_conversation(conversation) -> bool:
+    """Mark the conversation as escalated and create the escalation ticket.
+
+    Public because the ``verify_scenario3`` command exercises the same path the
+    agent uses.
+    """
     if not conversation.escalated:
         conversation.escalated = True
         conversation.save(update_fields=["escalated", "updated_at"])

@@ -19,5 +19,9 @@ urlpatterns = [
     path("api/", include("apps.conversations.urls")),
 ]
 
+admin.site.site_header = "Emtelco — Administración"
+admin.site.site_title = "Emtelco"
+admin.site.index_title = "Datos del agente (pedidos, garantías, tickets, conversaciones)"
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
