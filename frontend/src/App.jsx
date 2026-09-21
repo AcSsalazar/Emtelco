@@ -13,7 +13,7 @@ export default function App() {
       <Route element={<Layout />}>
         <Route path="/" element={<LandingPage />} />
         <Route path="/acerca" element={<AboutPage />} />
-      </Route>
+      
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route
@@ -25,6 +25,7 @@ export default function App() {
         }
       />
       <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
     </Routes>
   );
 }

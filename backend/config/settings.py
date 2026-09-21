@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     # Third party
     "rest_framework",
     "corsheaders",
+    "drf_spectacular",
     # Local apps
     "apps.accounts",
     "apps.catalog",
@@ -58,6 +59,7 @@ INSTALLED_APPS = [
     "apps.conversations",
     "apps.support",
     "apps.agent",
+    
 ]
 
 MIDDLEWARE = [
@@ -150,6 +152,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
     "EXCEPTION_HANDLER": "apps.agent.exceptions.api_exception_handler",
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 SIMPLE_JWT = {
@@ -206,4 +209,13 @@ LOGGING = {
         "apps.agent": {"handlers": ["console"], "level": "INFO", "propagate": False},
         "django.request": {"handlers": ["console"], "level": "ERROR", "propagate": False},
     },
+}
+
+SPECTACULAR_SETTINGS = {
+
+    "TITLE": "Emtelco Agent API",
+    "DESCRIPTION": "Documentacion completa de la API",
+    "VERSION": "0.1.0",
+    "SERVE_INCLUDE_SCHEMA":"False",
+
 }

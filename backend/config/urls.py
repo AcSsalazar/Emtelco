@@ -3,7 +3,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.http import JsonResponse
 from django.urls import include, path
-
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 def health(_request):
     return JsonResponse({"status": "ok"})
@@ -17,6 +17,10 @@ urlpatterns = [
     path("api/", include("apps.catalog.urls")),
     path("api/", include("apps.orders.urls")),
     path("api/", include("apps.conversations.urls")),
+    # Documentation:
+    path("schema/", SpectacularAPIView.as_view(), name="schema"),
+    path('docs/', SpectacularSwaggerView.as_view(), name='swagger-ui')
+         
 ]
 
 admin.site.site_header = "Emtelco — Administración"

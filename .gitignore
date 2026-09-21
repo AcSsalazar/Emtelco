@@ -34,9 +34,11 @@ pnpm-debug.log*
 # Un solo lockfile: se usa pnpm
 frontend/package-lock.json
 
-# Documentos del enunciado (no se publican)
+# Dev docs and instructions 
 AGENT_BUILD_PROMPT.md
 PRUEBA_TECNICA_*.md
+/docs/diagrams
+
 
 # Entregable
 *.zip
